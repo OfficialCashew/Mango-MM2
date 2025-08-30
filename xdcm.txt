@@ -1,0 +1,541 @@
+```lua
+local player = game:GetService("Players").LocalPlayer
+local rs = game:GetService("ReplicatedStorage")
+local uis = game:GetService("UserInputService")
+local ts = game:GetService("TweenService")
+
+-- GUI Setup
+local gui = Instance.new("ScreenGui")
+gui.Name = "CashewsAutoOpenUI"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+-- Main Frame
+local main = Instance.new("Frame")
+main.Size = UDim2.new(0, 400, 0, 350)
+main.Position = UDim2.new(0.5, 0, 0.5, 0)
+main.AnchorPoint = Vector2.new(0.5, 0.5)
+main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+main.BorderSizePixel = 0
+main.Active = true
+main.Draggable = true
+main.ClipsDescendants = true
+main.Parent = gui
+
+local mainStroke = Instance.new("UIStroke", main)
+mainStroke.Color = Color3.fromRGB(80, 80, 80)
+mainStroke.Thickness = 2
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
+
+-- Title
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1, -40, 0, 28)
+title.Position = UDim2.new(0, 10, 0, 5)
+title.Text = "Cashew's Auto Open Script"
+title.Font = Enum.Font.GothamBlack
+title.TextColor3 = Color3.new(1, 1, 1)
+title.BackgroundTransparency = 1
+title.TextSize = 20
+title.ZIndex = 2
+
+-- Minimize Button
+local minimize = Instance.new("TextButton", main)
+minimize.Size = UDim2.new(0, 30, 0, 28)
+minimize.Position = UDim2.new(1, -35, 0, 5)
+minimize.Text = "-"
+minimize.Font = Enum.Font.GothamBold
+minimize.TextSize = 18
+minimize.TextColor3 = Color3.new(1, 1, 1)
+minimize.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+minimize.ZIndex = 2
+local minimizeStroke = Instance.new("UIStroke", minimize)
+minimizeStroke.Color = Color3.fromRGB(80, 80, 80)
+minimizeStroke.Thickness = 1
+Instance.new("UICorner", minimize).CornerRadius = UDim.new(0, 8)
+
+-- Enable All Buttons and Delay Input
+local enableAllFrame = Instance.new("Frame", main)
+enableAllFrame.Size = UDim2.new(1, -20, 0, 40)
+enableAllFrame.Position = UDim2.new(0, 10, 0, 38)
+enableAllFrame.BackgroundTransparency = 1
+
+local enableAllDelayBox = Instance.new("TextBox", enableAllFrame)
+enableAllDelayBox.Size = UDim2.new(0, 50, 0, 30)
+enableAllDelayBox.Position = UDim2.new(0, 0, 0, 5)
+enableAllDelayBox.Text = "0.1"
+enableAllDelayBox.TextSize = 14
+enableAllDelayBox.Font = Enum.Font.GothamBold
+enableAllDelayBox.TextColor3 = Color3.new(1, 1, 1)
+enableAllDelayBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+local delayStroke = Instance.new("UIStroke", enableAllDelayBox)
+delayStroke.Color = Color3.fromRGB(80, 80, 80)
+delayStroke.Thickness = 1
+Instance.new("UICorner", enableAllDelayBox).CornerRadius = UDim.new(0, 4)
+
+local enableAllButtonChristmas = Instance.new("TextButton", enableAllFrame)
+enableAllButtonChristmas.Size = UDim2.new(0, 150, 0, 30)
+enableAllButtonChristmas.Position = UDim2.new(0, 60, 0, 5)
+enableAllButtonChristmas.Text = "Christmas Event: OFF"
+enableAllButtonChristmas.TextSize = 14
+enableAllButtonChristmas.Font = Enum.Font.GothamBold
+enableAllButtonChristmas.TextColor3 = Color3.new(1, 1, 1)
+enableAllButtonChristmas.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+local christmasBtnStroke = Instance.new("UIStroke", enableAllButtonChristmas)
+christmasBtnStroke.Color = Color3.fromRGB(80, 80, 80)
+christmasBtnStroke.Thickness = 1
+Instance.new("UICorner", enableAllButtonChristmas).CornerRadius = UDim.new(0, 8)
+
+local enableAllButtonWeapons = Instance.new("TextButton", enableAllFrame)
+enableAllButtonWeapons.Size = UDim2.new(0, 150, 0, 30)
+enableAllButtonWeapons.Position = UDim2.new(0, 220, 0, 5)
+enableAllButtonWeapons.Text = "Normal Weapons: OFF"
+enableAllButtonWeapons.TextSize = 14
+enableAllButtonWeapons.Font = Enum.Font.GothamBold
+enableAllButtonWeapons.TextColor3 = Color3.new(1, 1, 1)
+enableAllButtonWeapons.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+local weaponsBtnStroke = Instance.new("UIStroke", enableAllButtonWeapons)
+weaponsBtnStroke.Color = Color3.fromRGB(80, 80, 80)
+weaponsBtnStroke.Thickness = 1
+Instance.new("UICorner", enableAllButtonWeapons).CornerRadius = UDim.new(0, 8)
+
+-- Section Holder (Normal Weapons, Event Weapons)
+local sectionHolder = Instance.new("Frame", main)
+sectionHolder.Position = UDim2.new(0, 10, 0, 82)
+sectionHolder.Size = UDim2.new(1, -20, 0, 30)
+sectionHolder.BackgroundTransparency = 1
+sectionHolder.ClipsDescendants = true
+
+-- Scrolling Frame for Tabs
+local scrollingFrame = Instance.new("ScrollingFrame", sectionHolder)
+scrollingFrame.Size = UDim2.new(1, 0, 1, 0)
+scrollingFrame.BackgroundTransparency = 1
+scrollingFrame.ScrollBarThickness = 4
+scrollingFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+scrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+scrollingFrame.ScrollingDirection = Enum.ScrollingDirection.X
+scrollingFrame.VerticalScrollBarInset = Enum.ScrollBarInset.None
+
+local sectionLayout = Instance.new("UIListLayout", scrollingFrame)
+sectionLayout.FillDirection = Enum.FillDirection.Horizontal
+sectionLayout.Padding = UDim.new(0, 8)
+sectionLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+
+-- Sections
+local sections = {
+	{ Name = "Normal Weapons" },
+	{ Name = "Summer Event" },
+	{ Name = "Christmas Event" },
+	{ Name = "Event Weapons" }
+}
+
+local pages = {}
+local currentSection = nil
+
+for i, section in ipairs(sections) do
+	local btn = Instance.new("TextButton", scrollingFrame)
+	btn.Size = UDim2.new(0, 180, 1, 0)
+	btn.Text = section.Name
+	btn.TextSize = 16
+	btn.Font = Enum.Font.GothamBold
+	btn.TextColor3 = Color3.new(1, 1, 1)
+	btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+	local btnStroke = Instance.new("UIStroke", btn)
+	btnStroke.Color = Color3.fromRGB(100, 100, 100)
+	btnStroke.Thickness = 1
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+
+	local page = Instance.new("Frame", main)
+	page.Position = UDim2.new(0, 10, 0, 116)
+	page.Size = UDim2.new(1, -20, 1, -126)
+	page.BackgroundTransparency = 1
+	page.Visible = false
+	page.Name = section.Name
+
+	-- Add ScrollingFrame for buttons in this page
+	local buttonScrollingFrame = Instance.new("ScrollingFrame", page)
+	buttonScrollingFrame.Size = UDim2.new(1, 0, 1, 0)
+	buttonScrollingFrame.BackgroundTransparency = 1
+	buttonScrollingFrame.ScrollBarThickness = 4
+	buttonScrollingFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+	buttonScrollingFrame.ScrollingDirection = Enum.ScrollingDirection.Y
+	buttonScrollingFrame.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
+	buttonScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+
+	local buttonLayout = Instance.new("UIListLayout", buttonScrollingFrame)
+	buttonLayout.Padding = UDim.new(0, 8)
+	buttonLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	buttonLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+	table.insert(pages, page)
+
+	btn.MouseButton1Click:Connect(function()
+		for _, p in ipairs(pages) do
+			p.Visible = (p == page)
+		end
+		currentSection = page
+	end)
+
+	page.Parent = main
+
+	-- Update CanvasSize for tabs
+	if i == #sections then
+		local totalWidth = i * (180 + 8) - 8
+		scrollingFrame.CanvasSize = UDim2.new(0, totalWidth, 0, 30)
+	end
+end
+
+pages[1].Visible = true
+currentSection = pages[1]
+
+-- Box Data with Prices
+local normalBoxes = {
+	{ Name = "Mystery Box #1", Color = Color3.fromRGB(85, 170, 255), BoxID = "MysteryBox", Price = "Price: 0" },
+	{ Name = "Mystery Box #2", Color = Color3.fromRGB(170, 85, 255), BoxID = "MysteryBox2", Price = "Price: 0" },
+	{ Name = "Knife Box #1", Color = Color3.fromRGB(255, 85, 0), BoxID = "KnifeBox1", Price = "Price: 0" },
+	{ Name = "Knife Box #2", Color = Color3.fromRGB(0, 255, 127), BoxID = "KnifeBox2", Price = "Price: 0" },
+	{ Name = "Knife Box #3", Color = Color3.fromRGB(255, 255, 0), BoxID = "KnifeBox3", Price = "Price: 0" },
+	{ Name = "Knife Box #4", Color = Color3.fromRGB(0, 255, 255), BoxID = "KnifeBox4", Price = "Price: 0" },
+	{ Name = "Knife Box #5", Color = Color3.fromRGB(255, 0, 127), BoxID = "KnifeBox5", Price = "Price: 0" },
+	{ Name = "Gun Box #1", Color = Color3.fromRGB(100, 200, 100), BoxID = "GunBox1", Price = "Price: 0" },
+	{ Name = "Gun Box #2", Color = Color3.fromRGB(200, 100, 200), BoxID = "GunBox2", Price = "Price: 0" },
+	{ Name = "Gun Box #3", Color = Color3.fromRGB(200, 150, 50), BoxID = "GunBox3", Price = "Price: 0" },
+	{ Name = "Gun Box #4", Color = Color3.fromRGB(50, 200, 150), BoxID = "GunBox4", Price = "Price: 0" },
+	{ Name = "Gun Box #5", Color = Color3.fromRGB(150, 50, 200), BoxID = "GunBox5", Price = "Price: 0" },
+	{ Name = "Rainbow Box", Color = Color3.fromRGB(255, 0, 255), BoxID = "MLGBox", Price = "Price: 0" },
+	{ Name = "Legendary Box", Color = Color3.fromRGB(255, 215, 0), BoxID = "LegendaryCase", Price = "Price: 0" },
+}
+
+local summerBoxes = {
+	{ Name = "Summer Box '24", Color = Color3.fromRGB(0, 255, 255), BoxID = "Summer2024Box", Price = "Price: 3000" },
+	{ Name = "Sunset", Color = Color3.fromRGB(255, 165, 0), BoxID = "Summer2025Box-2", Price = "Price: 3500" },
+	{ Name = "Summer Box '25", Color = Color3.fromRGB(255, 255, 0), BoxID = "Summer2025Box", Price = "Price: 4000" },
+}
+
+local christmasBoxes = {
+	{ Name = "Christmas Gun Box 2015", Color = Color3.fromRGB(255, 0, 0), BoxID = "ChristmasGunBox", Price = "Price: 20" },
+	{ Name = "Christmas Knife Box 2016", Color = Color3.fromRGB(0, 255, 0), BoxID = "ChristmasKnifeBox2", Price = "Price: 20" },
+	{ Name = "Christmas Box 2017", Color = Color3.fromRGB(255, 165, 0), BoxID = "Xmas2017Box", Price = "Price: 20" },
+	{ Name = "Christmas Box 2018", Color = Color3.fromRGB(0, 0, 255), BoxID = "Xmas2018Box", Price = "Price: 20" },
+	{ Name = "Christmas Box 2020", Color = Color3.fromRGB(255, 255, 0), BoxID = "Xmas2020Box", Price = "Price: 20" },
+	{ Name = "Christmas Box 2022", Color = Color3.fromRGB(0, 255, 255), BoxID = "Xmas2022Box", Price = "Price: 20" },
+	{ Name = "Christmas Box 2023", Color = Color3.fromRGB(255, 0, 255), BoxID = "XMAS2023BOX", Price = "Price: 0" },
+	{ Name = "Christmas Box 24", Color = Color3.fromRGB(255, 255, 255), BoxID = "HChristmas2024Box", Price = "Price: 200" },
+}
+
+local autoStates = {}
+
+-- Toggle auto-open function
+local function toggleAutoOpen(box, button, delayBox, sectionName)
+	autoStates[box.Name] = not autoStates[box.Name]
+	button.Text = box.Name .. ": " .. (autoStates[box.Name] and "YES" or "NO")
+
+	while autoStates[box.Name] do
+		local args = {
+			[1] = box.BoxID,
+			[2] = false,
+			[3] = "Credits",
+		}
+		rs:WaitForChild("Game", 9e9):WaitForChild("Remotes", 9e9):WaitForChild("Shop", 9e9):WaitForChild("OpenCrate", 9e9):InvokeServer(unpack(args))
+		local delay = tonumber(delayBox.Text) or 0.1
+		task.wait(delay)
+	end
+end
+
+-- Function to create buttons and delay input for a given container
+local function createButtons(boxes, container, sectionName)
+	local layout = Instance.new("UIListLayout", container)
+	layout.Padding = UDim.new(0, 8)
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
+	layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+	for i, box in ipairs(boxes) do
+		local frame = Instance.new("Frame", container)
+		frame.Size = UDim2.new(1, -10, 0, 70)
+		frame.BackgroundTransparency = 1
+
+		local delayBox = Instance.new("TextBox", frame)
+		delayBox.Size = UDim2.new(0, 50, 0, 30)
+		delayBox.Position = UDim2.new(0, 0, 0, 30)
+		delayBox.Text = "0.1"
+		delayBox.TextSize = 14
+		delayBox.Font = Enum.Font.GothamBold
+		delayBox.TextColor3 = Color3.new(1, 1, 1)
+		delayBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+		local delayStroke = Instance.new("UIStroke", delayBox)
+		delayStroke.Color = Color3.fromRGB(80, 80, 80)
+		delayStroke.Thickness = 1
+		Instance.new("UICorner", delayBox).CornerRadius = UDim.new(0, 4)
+
+		local priceLabel = Instance.new("TextLabel", frame)
+		priceLabel.Size = UDim2.new(0, 50, 0, 20)
+		priceLabel.Position = UDim2.new(0, 0, 0, 5)
+		priceLabel.Text = box.Price
+		priceLabel.TextSize = 12
+		priceLabel.Font = Enum.Font.GothamBold
+		priceLabel.TextColor3 = Color3.new(1, 1, 1)
+		priceLabel.BackgroundTransparency = 1
+		priceLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+		local btn = Instance.new("TextButton", frame)
+		btn.Size = UDim2.new(1, -60, 0, 50)
+		btn.Position = UDim2.new(0, 60, 0, 20)
+		btn.Text = box.Name .. ": NO"
+		btn.TextSize = 18
+		btn.Font = Enum.Font.GothamBold
+		btn.TextColor3 = Color3.new(1, 1, 1)
+		btn.BackgroundColor3 = box.Color
+		local crateBtnStroke = Instance.new("UIStroke", btn)
+		crateBtnStroke.Color = Color3.fromRGB(80, 80, 80)
+		crateBtnStroke.Thickness = 1
+		Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+
+		autoStates[box.Name] = false
+
+		btn.MouseButton1Click:Connect(function()
+			toggleAutoOpen(box, btn, delayBox, sectionName)
+		end)
+	end
+end
+
+-- Function to create dropdown for a category
+local function createDropdown(categoryName, boxes, parent, sectionName)
+	local header = Instance.new("TextButton", parent)
+	header.Size = UDim2.new(1, -10, 0, 40)
+	header.Text = categoryName .. " ▼"
+	header.TextSize = 16
+	header.Font = Enum.Font.GothamBold
+	header.TextColor3 = Color3.new(1, 1, 1)
+	header.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	local headerStroke = Instance.new("UIStroke", header)
+	headerStroke.Color = Color3.fromRGB(80, 80, 80)
+	headerStroke.Thickness = 1
+	Instance.new("UICorner", header).CornerRadius = UDim.new(0, 8)
+
+	local container = Instance.new("Frame", parent)
+	container.Size = UDim2.new(1, -10, 0, 0)
+	container.BackgroundTransparency = 1
+	container.Visible = false
+
+	createButtons(boxes, container, sectionName)
+
+	local function updateCanvasSize()
+		local totalHeight = 0
+		for _, child in ipairs(parent:GetChildren()) do
+			if child:IsA("Frame") and child.Visible then
+				totalHeight = totalHeight + child.Size.Y.Offset + 8
+			elseif child:IsA("TextButton") and child ~= header then
+				totalHeight = totalHeight + child.Size.Y.Offset + 8
+			end
+		end
+		totalHeight = totalHeight + 40
+		parent.CanvasSize = UDim2.new(0, 0, 0, totalHeight)
+	end
+
+	header.MouseButton1Click:Connect(function()
+		container.Visible = not container.Visible
+		header.Text = categoryName .. (container.Visible and " ▲" or " ▼")
+		local boxHeight = #boxes * (70 + 8) - 8
+		container.Size = UDim2.new(1, -10, 0, container.Visible and boxHeight or 0)
+		updateCanvasSize()
+	end)
+
+	updateCanvasSize()
+end
+
+-- Enable All Toggle Logic
+local function toggleAllAutoOpen(sectionName, state, button, delayBox)
+	local page = main:FindFirstChild(sectionName)
+	if not page then return end
+
+	local buttonScrollingFrame = page:FindFirstChildOfClass("ScrollingFrame")
+	if not buttonScrollingFrame then return end
+
+	local boxes = (sectionName == "Normal Weapons") and normalBoxes or christmasBoxes
+	local delay = tonumber(delayBox.Text) or 0.1
+
+	for _, child in ipairs(buttonScrollingFrame:GetChildren()) do
+		if child:IsA("Frame") and child.Visible then
+			for _, frame in ipairs(child:GetChildren()) do
+				if frame:IsA("Frame") then
+					local btn = frame:FindFirstChildOfClass("TextButton")
+					local boxDelayBox = frame:FindFirstChildOfClass("TextBox")
+					if btn and boxDelayBox then
+						for _, box in ipairs(boxes) do
+							if btn.Text:match(box.Name) then
+								if autoStates[box.Name] ~= state then
+									autoStates[box.Name] = state
+									btn.Text = box.Name .. ": " .. (state and "YES" or "NO")
+									if state then
+										spawn(function()
+											while autoStates[box.Name] do
+												local args = {
+													[1] = box.BoxID,
+													[2] = false,
+													[3] = "Credits",
+												}
+												rs:WaitForChild("Game", 9e9):WaitForChild("Remotes", 9e9):WaitForChild("Shop", 9e9):WaitForChild("OpenCrate", 9e9):InvokeServer(unpack(args))
+												task.wait(delay)
+											end
+										end)
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+		elseif child:IsA("Frame") then
+			for _, frame in ipairs(child:GetChildren()) do
+				if frame:IsA("Frame") then
+					local btn = frame:FindFirstChildOfClass("TextButton")
+					local boxDelayBox = frame:FindFirstChildOfClass("TextBox")
+					if btn and boxDelayBox then
+						for _, box in ipairs(boxes) do
+							if btn.Text:match(box.Name) then
+								if autoStates[box.Name] ~= state then
+									autoStates[box.Name] = state
+									btn.Text = box.Name .. ": " .. (state and "YES" or "NO")
+									if state then
+										spawn(function()
+											while autoStates[box.Name] do
+												local args = {
+													[1] = box.BoxID,
+													[2] = false,
+													[3] = "Credits",
+												}
+												rs:WaitForChild("Game", 9e9):WaitForChild("Remotes", 9e9):WaitForChild("Shop", 9e9):WaitForChild("OpenCrate", 9e9):InvokeServer(unpack(args))
+												task.wait(delay)
+											end
+										end)
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+
+	button.Text = sectionName .. ": " .. (state and "ON" or "OFF")
+end
+
+enableAllButtonChristmas.MouseButton1Click:Connect(function()
+	local newState = not autoStates["Christmas Event All"]
+	autoStates["Christmas Event All"] = newState
+	toggleAllAutoOpen("Christmas Event", newState, enableAllButtonChristmas, enableAllDelayBox)
+end)
+
+enableAllButtonWeapons.MouseButton1Click:Connect(function()
+	local newState = not autoStates["Normal Weapons All"]
+	autoStates["Normal Weapons All"] = newState
+	toggleAllAutoOpen("Normal Weapons", newState, enableAllButtonWeapons, enableAllDelayBox)
+end)
+
+-- Create crate buttons and dropdowns for each section
+for i, page in ipairs(pages) do
+	if sections[i].Name == "Normal Weapons" then
+		local buttonScrollingFrame = page:FindFirstChildOfClass("ScrollingFrame")
+		createDropdown("Mystery Boxes", {
+			{ Name = "Mystery Box #1", Color = Color3.fromRGB(85, 170, 255), BoxID = "MysteryBox", Price = "Price: 0" },
+			{ Name = "Mystery Box #2", Color = Color3.fromRGB(170, 85, 255), BoxID = "MysteryBox2", Price = "Price: 0" },
+		}, buttonScrollingFrame, "Normal Weapons")
+		createDropdown("Knife Boxes", {
+			{ Name = "Knife Box #1", Color = Color3.fromRGB(255, 85, 0), BoxID = "KnifeBox1", Price = "Price: 0" },
+			{ Name = "Knife Box #2", Color = Color3.fromRGB(0, 255, 127), BoxID = "KnifeBox2", Price = "Price: 0" },
+			{ Name = "Knife Box #3", Color = Color3.fromRGB(255, 255, 0), BoxID = "KnifeBox3", Price = "Price: 0" },
+			{ Name = "Knife Box #4", Color = Color3.fromRGB(0, 255, 255), BoxID = "KnifeBox4", Price = "Price: 0" },
+			{ Name = "Knife Box #5", Color = Color3.fromRGB(255, 0, 127), BoxID = "KnifeBox5", Price = "Price: 0" },
+		}, buttonScrollingFrame, "Normal Weapons")
+		createDropdown("Gun Boxes", {
+			{ Name = "Gun Box #1", Color = Color3.fromRGB(100, 200, 100), BoxID = "GunBox1", Price = "Price: 0" },
+			{ Name = "Gun Box #2", Color = Color3.fromRGB(200, 100, 200), BoxID = "GunBox2", Price = "Price: 0" },
+			{ Name = "Gun Box #3", Color = Color3.fromRGB(200, 150, 50), BoxID = "GunBox3", Price = "Price: 0" },
+			{ Name = "Gun Box #4", Color = Color3.fromRGB(50, 200, 150), BoxID = "GunBox4", Price = "Price: 0" },
+			{ Name = "Gun Box #5", Color = Color3.fromRGB(150, 50, 200), BoxID = "GunBox5", Price = "Price: 0" },
+		}, buttonScrollingFrame, "Normal Weapons")
+		createDropdown("Special Boxes", {
+			{ Name = "Rainbow Box", Color = Color3.fromRGB(255, 0, 255), BoxID = "MLGBox", Price = "Price: 0" },
+			{ Name = "Legendary Box", Color = Color3.fromRGB(255, 215, 0), BoxID = "LegendaryCase", Price = "Price: 0" },
+		}, buttonScrollingFrame, "Normal Weapons")
+	elseif sections[i].Name == "Summer Event" then
+		createButtons(summerBoxes, page, "Summer Event")
+	elseif sections[i].Name == "Christmas Event" then
+		local buttonScrollingFrame = page:FindFirstChildOfClass("ScrollingFrame")
+		createDropdown("Christmas Gun Boxes", {
+			{ Name = "Christmas Gun Box 2015", Color = Color3.fromRGB(255, 0, 0), BoxID = "ChristmasGunBox", Price = "Price: 20" },
+		}, buttonScrollingFrame, "Christmas Event")
+		createDropdown("Christmas Knife Boxes", {
+			{ Name = "Christmas Knife Box 2016", Color = Color3.fromRGB(0, 255, 0), BoxID = "ChristmasKnifeBox2", Price = "Price: 20" },
+		}, buttonScrollingFrame, "Christmas Event")
+		createDropdown("Christmas Event Boxes", {
+			{ Name = "Christmas Box 2017", Color = Color3.fromRGB(255, 165, 0), BoxID = "Xmas2017Box", Price = "Price: 20" },
+			{ Name = "Christmas Box 2018", Color = Color3.fromRGB(0, 0, 255), BoxID = "Xmas2018Box", Price = "Price: 20" },
+			{ Name = "Christmas Box 2020", Color = Color3.fromRGB(255, 255, 0), BoxID = "Xmas2020Box", Price = "Price: 20" },
+			{ Name = "Christmas Box 2022", Color = Color3.fromRGB(0, 255, 255), BoxID = "Xmas2022Box", Price = "Price: 20" },
+			{ Name = "Christmas Box 2023", Color = Color3.fromRGB(255, 0, 255), BoxID = "XMAS2023BOX", Price = "Price: 0" },
+			{ Name = "Christmas Box 24", Color = Color3.fromRGB(255, 255, 255), BoxID = "HChristmas2024Box", Price = "Price: 200" },
+		}, buttonScrollingFrame, "Christmas Event")
+	end
+end
+
+-- Collect originals for fading
+local originals = {}
+
+local function collectOriginals(obj)
+	if obj:IsA("GuiObject") then
+		local entry = {}
+		entry.bg_trans = obj.BackgroundTransparency
+		if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
+			entry.text_trans = obj.TextTransparency
+		end
+		if next(entry) then
+			originals[obj] = entry
+		end
+	end
+	for _, child in ipairs(obj:GetChildren()) do
+		collectOriginals(child)
+	end
+end
+
+collectOriginals(sectionHolder)
+collectOriginals(enableAllFrame)
+for _, p in ipairs(pages) do
+	collectOriginals(p)
+end
+
+-- Minimize logic
+local isMinimized = false
+local originalSize = main.Size
+local minimizedSize = UDim2.new(originalSize.X.Scale, originalSize.X.Offset, 0, 38)
+local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+local function fadeElements(transparency)
+	for obj, orig in pairs(originals) do
+		if obj:IsA("GuiObject") then
+			if orig.bg_trans then
+				local target_bg = (transparency == 1) and 1 or orig.bg_trans
+				ts:Create(obj, tweenInfo, {BackgroundTransparency = target_bg}):Play()
+			end
+			if orig.text_trans then
+				local target_text = (transparency == 1) and 1 or orig.text_trans
+				ts:Create(obj, tweenInfo, {TextTransparency = target_text}):Play()
+			end
+		end
+	end
+end
+
+minimize.MouseButton1Click:Connect(function()
+	isMinimized = not isMinimized
+
+	if isMinimized then
+		minimize.Text = "+"
+		fadeElements(1)
+		ts:Create(main, tweenInfo, { Size = minimizedSize }):Play()
+	else
+		minimize.Text = "-"
+		fadeElements(0)
+		ts:Create(main, tweenInfo, { Size = originalSize }):Play()
+	end
+end)
+```
