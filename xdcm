@@ -1,4 +1,3 @@
-```lua
 local player = game:GetService("Players").LocalPlayer
 local rs = game:GetService("ReplicatedStorage")
 local uis = game:GetService("UserInputService")
@@ -538,4 +537,3 @@ minimize.MouseButton1Click:Connect(function()
 		ts:Create(main, tweenInfo, { Size = originalSize }):Play()
 	end
 end)
-```
