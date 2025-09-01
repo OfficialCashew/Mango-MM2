@@ -1,0 +1,434 @@
+local player = game:GetService("Players").LocalPlayer
+local rs = game:GetService("ReplicatedStorage")
+local uis = game:GetService("UserInputService")
+local ts = game:GetService("TweenService")
+
+-- GUI Setup
+local gui = Instance.new("ScreenGui")
+gui.Name = "CashewsAutoOpenUI"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+-- Main Frame (increased width from 400 to 450)
+local main = Instance.new("Frame")
+main.Size = UDim2.new(0, 450, 0, 350)
+main.Position = UDim2.new(0.5, 0, 0.5, 0)
+main.AnchorPoint = Vector2.new(0.5, 0.5)
+main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+main.BorderSizePixel = 0
+main.Active = true
+main.Draggable = true
+main.ClipsDescendants = true
+main.Parent = gui
+
+local mainStroke = Instance.new("UIStroke", main)
+mainStroke.Color = Color3.fromRGB(80, 80, 80)
+mainStroke.Thickness = 2
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
+
+-- Title
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1, -40, 0, 28)
+title.Position = UDim2.new(0, 10, 0, 5)
+title.Text = "❤️ Mango's MM2  |  Auto Open Boxes"
+title.Font = Enum.Font.GothamBlack
+title.TextColor3 = Color3.new(1, 1, 1)
+title.BackgroundTransparency = 1
+title.TextSize = 20
+title.ZIndex = 2
+
+-- Minimize Button
+local minimize = Instance.new("TextButton", main)
+minimize.Size = UDim2.new(0, 30, 0, 28)
+minimize.Position = UDim2.new(1, -35, 0, 5)
+minimize.Text = "-"
+minimize.Font = Enum.Font.GothamBold
+minimize.TextSize = 18
+minimize.TextColor3 = Color3.new(1, 1, 1)
+minimize.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+minimize.ZIndex = 2
+local minimizeStroke = Instance.new("UIStroke", minimize)
+minimizeStroke.Color = Color3.fromRGB(80, 80, 80)
+minimizeStroke.Thickness = 1
+Instance.new("UICorner", minimize).CornerRadius = UDim.new(0, 8)
+
+-- Sidebar for Tabs
+local sidebar = Instance.new("Frame", main)
+sidebar.Position = UDim2.new(0, 0, 0, 38)
+sidebar.Size = UDim2.new(0, 120, 1, -38)
+sidebar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+sidebar.BorderSizePixel = 0
+
+local sidebarStroke = Instance.new("UIStroke", sidebar)
+sidebarStroke.Color = Color3.fromRGB(80, 80, 80)
+sidebarStroke.Thickness = 1
+
+-- Tab List in Sidebar
+local tabList = Instance.new("UIListLayout", sidebar)
+tabList.Padding = UDim.new(0, 5)
+tabList.SortOrder = Enum.SortOrder.LayoutOrder
+tabList.VerticalAlignment = Enum.VerticalAlignment.Top
+
+-- Content Area (adjusted to account for wider main frame)
+local contentArea = Instance.new("Frame", main)
+contentArea.Position = UDim2.new(0, 120, 0, 38)
+contentArea.Size = UDim2.new(1, -120, 1, -38)
+contentArea.BackgroundTransparency = 1
+contentArea.ClipsDescendants = true
+
+-- Sections
+local sections = {
+	{ Name = "Normal Boxes" },
+	{ Name = "Summer Boxes" },
+	{ Name = "Christmas Boxes" },
+	{ Name = "Halloween Boxes" }
+}
+
+local pages = {}
+local currentSection = nil
+
+for i, section in ipairs(sections) do
+	-- Tab Button in Sidebar
+	local tabFrame = Instance.new("Frame", sidebar)
+	tabFrame.Size = UDim2.new(1, 0, 0, 30)
+	tabFrame.BackgroundTransparency = 1
+
+	local tabButton = Instance.new("TextButton", tabFrame)
+	tabButton.Size = UDim2.new(1, -10, 1, 0)
+	tabButton.Position = UDim2.new(0, 10, 0, 0)
+	tabButton.Text = section.Name
+	tabButton.TextSize = 14
+	tabButton.Font = Enum.Font.GothamBold
+	tabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+	tabButton.BackgroundTransparency = 1
+	tabButton.TextXAlignment = Enum.TextXAlignment.Left
+
+	-- Page
+	local page = Instance.new("Frame", contentArea)
+	page.Size = UDim2.new(1, 0, 1, 0)
+	page.BackgroundTransparency = 1
+	page.Visible = false
+	page.Name = section.Name
+
+	-- Add ScrollingFrame for buttons in this page
+	local buttonScrollingFrame = Instance.new("ScrollingFrame", page)
+	buttonScrollingFrame.Size = UDim2.new(1, 0, 1, 0)
+	buttonScrollingFrame.BackgroundTransparency = 1
+	buttonScrollingFrame.ScrollBarThickness = 4
+	buttonScrollingFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+	buttonScrollingFrame.ScrollingDirection = Enum.ScrollingDirection.Y
+	buttonScrollingFrame.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
+	buttonScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+
+	local buttonLayout = Instance.new("UIListLayout", buttonScrollingFrame)
+	buttonLayout.Padding = UDim.new(0, 8)
+	buttonLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	buttonLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+	table.insert(pages, page)
+
+	tabButton.MouseButton1Click:Connect(function()
+		for _, p in ipairs(pages) do
+			p.Visible = (p == page)
+		end
+		currentSection = page
+		-- Update selected tab visuals
+		for _, otherTab in ipairs(sidebar:GetChildren()) do
+			if otherTab:IsA("Frame") then
+				otherTab:FindFirstChild("TextButton").TextColor3 = Color3.fromRGB(200, 200, 200)
+			end
+		end
+		tabButton.TextColor3 = Color3.new(1, 1, 1)
+	end)
+
+	if i == 1 then
+		page.Visible = true
+		currentSection = page
+		tabButton.TextColor3 = Color3.new(1, 1, 1)
+	end
+end
+
+-- Box Data with Prices
+local normalBoxes = {
+	{ Name = "Mystery Box #1", Color = Color3.fromRGB(85, 170, 255), BoxID = "MysteryBox", Price = "Price: 0" },
+	{ Name = "Mystery Box #2", Color = Color3.fromRGB(170, 85, 255), BoxID = "MysteryBox2", Price = "Price: 0" },
+	{ Name = "Knife Box #1", Color = Color3.fromRGB(255, 85, 0), BoxID = "KnifeBox1", Price = "Price: 0" },
+	{ Name = "Knife Box #2", Color = Color3.fromRGB(0, 255, 127), BoxID = "KnifeBox2", Price = "Price: 0" },
+	{ Name = "Knife Box #3", Color = Color3.fromRGB(255, 255, 0), BoxID = "KnifeBox3", Price = "Price: 0" },
+	{ Name = "Knife Box #4", Color = Color3.fromRGB(0, 255, 255), BoxID = "KnifeBox4", Price = "Price: 0" },
+	{ Name = "Knife Box #5", Color = Color3.fromRGB(255, 0, 127), BoxID = "KnifeBox5", Price = "Price: 0" },
+	{ Name = "Gun Box #1", Color = Color3.fromRGB(100, 200, 100), BoxID = "GunBox1", Price = "Price: 0" },
+	{ Name = "Gun Box #2", Color = Color3.fromRGB(200, 100, 200), BoxID = "GunBox2", Price = "Price: 0" },
+	{ Name = "Gun Box #3", Color = Color3.fromRGB(200, 150, 50), BoxID = "GunBox3", Price = "Price: 0" },
+	{ Name = "Gun Box #4", Color = Color3.fromRGB(50, 200, 150), BoxID = "GunBox4", Price = "Price: 0" },
+	{ Name = "Gun Box #5", Color = Color3.fromRGB(150, 50, 200), BoxID = "GunBox5", Price = "Price: 0" },
+	{ Name = "Rainbow Box", Color = Color3.fromRGB(255, 0, 255), BoxID = "MLGBox", Price = "Price: 0" },
+	{ Name = "Legendary Box", Color = Color3.fromRGB(255, 215, 0), BoxID = "LegendaryCase", Price = "Price: 0" },
+}
+
+local summerBoxes = {
+	{ Name = "Summer Box '24", Color = Color3.fromRGB(0, 255, 255), BoxID = "Summer2024Box", Price = "Price: 3000" },
+	{ Name = "Sunset", Color = Color3.fromRGB(255, 165, 0), BoxID = "Summer2025Box-2", Price = "Price: 3500" },
+	{ Name = "Summer Box '25", Color = Color3.fromRGB(255, 255, 0), BoxID = "Summer2025Box", Price = "Price: 4000" },
+}
+
+local christmasBoxes = {
+	{ Name = "Christmas Gun Box 2015", Color = Color3.fromRGB(255, 0, 0), BoxID = "ChristmasGunBox", Price = "Price: 20" },
+	{ Name = "Christmas Knife Box 2016", Color = Color3.fromRGB(0, 255, 0), BoxID = "ChristmasKnifeBox2", Price = "Price: 20" },
+	{ Name = "Christmas Box 2017", Color = Color3.fromRGB(255, 165, 0), BoxID = "Xmas2017Box", Price = "Price: 20" },
+	{ Name = "Christmas Box 2018", Color = Color3.fromRGB(0, 0, 255), BoxID = "Xmas2018Box", Price = "Price: 20" },
+	{ Name = "Christmas Box 2020", Color = Color3.fromRGB(255, 255, 0), BoxID = "Xmas2020Box", Price = "Price: 20" },
+	{ Name = "Christmas Box 2022", Color = Color3.fromRGB(0, 255, 255), BoxID = "Xmas2022Box", Price = "Price: 20" },
+	{ Name = "Christmas Box 2023", Color = Color3.fromRGB(255, 0, 255), BoxID = "XMAS2023BOX", Price = "Price: 0" },
+	{ Name = "Christmas Box 24", Color = Color3.fromRGB(255, 255, 255), BoxID = "HChristmas2024Box", Price = "Price: 200" },
+}
+
+local autoStates = {}
+
+-- Toggle auto-open function
+local function toggleAutoOpen(box, button, nameLabel, statusBox, delayBox, sectionName)
+	autoStates[box.Name] = not autoStates[box.Name]
+	local statusText = autoStates[box.Name] and "YES" or "NO"
+	local statusColor = autoStates[box.Name] and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+	statusBox.Text = statusText
+	statusBox.TextColor3 = statusColor
+
+	while autoStates[box.Name] do
+		local args
+		if sectionName == "Normal Boxes" then
+			args = {
+				[1] = box.BoxID,
+				[2] = false,
+				[3] = "Credits",
+			}
+		else
+			args = {
+				[1] = box.BoxID,
+				[2] = false,
+				[3] = "Credits",
+			}
+		end
+		rs:WaitForChild("Game", 9e9):WaitForChild("Remotes", 9e9):WaitForChild("Shop", 9e9):WaitForChild("OpenCrate", 9e9):InvokeServer(unpack(args))
+		local delay = tonumber(delayBox.Text) or 0.1
+		task.wait(delay)
+	end
+end
+
+-- Function to create buttons and delay input for a given container
+local function createButtons(boxes, container, sectionName)
+	local layout = Instance.new("UIListLayout", container)
+	layout.Padding = UDim.new(0, 8)
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
+	layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+	for i, box in ipairs(boxes) do
+		local frame = Instance.new("Frame", container)
+		frame.Size = UDim2.new(1, -10, 0, 70)
+		frame.BackgroundTransparency = 1
+
+		local delayBox = Instance.new("TextBox", frame)
+		delayBox.Size = UDim2.new(0, 50, 0, 30)
+		delayBox.Position = UDim2.new(0, 0, 0, 30)
+		delayBox.Text = "0.1"
+		delayBox.TextSize = 14
+		delayBox.Font = Enum.Font.GothamBold
+		delayBox.TextColor3 = Color3.new(1, 1, 1)
+		delayBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+		local delayStroke = Instance.new("UIStroke", delayBox)
+		delayStroke.Color = Color3.fromRGB(80, 80, 80)
+		delayStroke.Thickness = 1
+		Instance.new("UICorner", delayBox).CornerRadius = UDim.new(0, 4)
+
+		local priceLabel = Instance.new("TextLabel", frame)
+		priceLabel.Size = UDim2.new(0, 50, 0, 20)
+		priceLabel.Position = UDim2.new(0, 0, 0, 5)
+		priceLabel.Text = box.Price
+		priceLabel.TextSize = 12
+		priceLabel.Font = Enum.Font.GothamBold
+		priceLabel.TextColor3 = Color3.new(1, 1, 1)
+		priceLabel.BackgroundTransparency =  versus 1
+		priceLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+		local btn = Instance.new("TextButton", frame)
+		btn.Size = UDim2.new(1, -110, 0, 50) -- Adjusted to make space for status box
+		btn.Position = UDim2.new(0, 60, 0, 20)
+		btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+		btn.Text = ""
+		local crateBtnStroke = Instance.new("UIStroke", btn)
+		crateBtnStroke.Color = Color3.fromRGB(80, 80, 80)
+		crateBtnStroke.Thickness = 2
+		Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 12)
+
+		local nameLabel = Instance.new("TextLabel", btn)
+		nameLabel.Size = UDim2.new(1, 0, 1, 0)
+		nameLabel.Position = UDim2.new(0, 0, 0, 0)
+		nameLabel.Text = box.Name
+		nameLabel.TextSize = 16
+		nameLabel.Font = Enum.Font.GothamBlack
+		nameLabel.TextColor3 = Color3.new(1, 1, 1)
+		nameLabel.BackgroundTransparency = 1
+		nameLabel.TextXAlignment = Enum.TextXAlignment.Center -- Centered text
+
+		local statusBox = Instance.new("TextLabel", frame)
+		statusBox.Size = UDim2.new(0, 40, 0, 30)
+		statusBox.Position = UDim2.new(1, -50, 0, 30)
+		statusBox.Text = "NO"
+		statusBox.TextSize = 14
+		statusBox.Font = Enum.Font.GothamBold
+		statusBox.TextColor3 = Color3.fromRGB(255, 0, 0)
+		statusBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+		local statusStroke = Instance.new("UIStroke", statusBox)
+		statusStroke.Color = Color3.fromRGB(80, 80, 80)
+		statusStroke.Thickness = 1
+		Instance.new("UICorner", statusBox).CornerRadius = UDim.new(0, 8)
+
+		autoStates[box.Name] = false
+
+		btn.MouseButton1Click:Connect(function()
+			toggleAutoOpen(box, btn, nameLabel, statusBox, delayBox, sectionName)
+		end)
+	end
+end
+
+-- Function to create dropdown for a category
+local function createDropdown(categoryName, boxes, parent, sectionName)
+	local header = Instance.new("TextButton", parent)
+	header.Size = UDim2.new(1, -10, 0, 40)
+	header.Text = categoryName .. " ▼"
+	header.TextSize = 16
+	header.Font = Enum.Font.GothamBold
+	header.TextColor3 = Color3.new(1, 1, 1)
+	header.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	local headerStroke = Instance.new("UIStroke", header)
+	headerStroke.Color = Color3.fromRGB(80, 80, 80)
+	headerStroke.Thickness = 1
+	Instance.new("UICorner", header).CornerRadius = UDim.new(0, 8)
+
+	local container = Instance.new("Frame", parent)
+	container.Size = UDim2.new(1, -10, 0, 0)
+	container.BackgroundTransparency = 1
+	container.Visible = false
+
+	createButtons(boxes, container, sectionName)
+
+	local function updateCanvasSize()
+		local totalHeight = 0
+		for _, child in ipairs(parent:GetChildren()) do
+			if child:IsA("Frame") and child.Visible then
+				totalHeight = totalHeight + child.Size.Y.Offset + 8
+			elseif child:IsA("TextButton") and child ~= header then
+				totalHeight = totalHeight + child.Size.Y.Offset + 8
+			end
+		end
+		totalHeight = totalHeight + 40
+		parent.CanvasSize = UDim2.new(0, 0, 0, totalHeight)
+	end
+
+	header.MouseButton1Click:Connect(function()
+		container.Visible = not container.Visible
+		header.Text = categoryName .. (container.Visible and " ▲" or " ▼")
+		local boxHeight = #boxes * (70 + 8) - 8
+		container.Size = UDim2.new(1, -10, 0, container.Visible and boxHeight or 0)
+		updateCanvasSize()
+	end)
+
+	updateCanvasSize()
+end
+
+-- Create crate buttons and dropdowns for each section
+for i, page in ipairs(pages) do
+	local buttonScrollingFrame = page:FindFirstChildOfClass("ScrollingFrame")
+	if sections[i].Name == "Normal Boxes" then
+		createDropdown("Mystery Boxes", {
+			normalBoxes[1], normalBoxes[2]
+		}, buttonScrollingFrame, "Normal Boxes")
+		createDropdown("Knife Boxes", {
+			normalBoxes[3], normalBoxes[4], normalBoxes[5], normalBoxes[6], normalBoxes[7]
+		}, buttonScrollingFrame, "Normal Boxes")
+		createDropdown("Gun Boxes", {
+			normalBoxes[8], normalBoxes[9], normalBoxes[10], normalBoxes[11], normalBoxes[12]
+		}, buttonScrollingFrame, "Normal Boxes")
+		createDropdown("Special Boxes", {
+			normalBoxes[13], normalBoxes[14]
+		}, buttonScrollingFrame, "Normal Boxes")
+	elseif sections[i].Name == "Summer Boxes" then
+		createButtons(summerBoxes, buttonScrollingFrame, "Summer Boxes")
+	elseif sections[i].Name == "Christmas Boxes" then
+		createDropdown("Christmas Gun Boxes", {
+			christmasBoxes[1]
+		}, buttonScrollingFrame, "Christmas Boxes")
+		createDropdown("Christmas Knife Boxes", {
+			christmasBoxes[2]
+		}, buttonScrollingFrame, "Christmas Boxes")
+		createDropdown("Christmas Event Boxes", {
+			christmasBoxes[3], christmasBoxes[4], christmasBoxes[5], christma
+sBoxes[6], christmasBoxes[7], christmasBoxes[8]
+		}, buttonScrollingFrame, "Christmas Boxes")
+	elseif sections[i].Name == "Halloween Boxes" then
+		-- Assuming empty or add content if needed
+	end
+end
+
+-- Collect originals for fading
+local originals = {}
+
+local function collectOriginals(obj)
+	if obj:IsA("GuiObject") then
+		local entry = {}
+		entry.bg_trans = obj.BackgroundTransparency
+		if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
+			entry.text_trans = obj.TextTransparency
+		end
+		if next(entry) then
+			originals[obj] = entry
+		end
+	end
+	for _, child in ipairs(obj:GetChildren()) do
+		collectOriginals(child)
+	end
+end
+
+collectOriginals(sidebar)
+collectOriginals(contentArea)
+
+-- Minimize logic
+local isMinimized = false
+local originalSize = main.Size
+local minimizedSize = UDim2.new(originalSize.X.Scale, originalSize.X.Offset, 0, 38)
+local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+local function fadeElements(transparency)
+	for obj, orig in pairs(originals) do
+		if obj:IsA("TextLabel") and obj.Parent:IsA("TextButton") then
+			continue -- Skip text labels inside buttons to preserve name visibility
+		end
+		if obj:IsA("TextButton") and obj.Parent:IsA("Frame") and obj.Parent.Parent:IsA("ScrollingFrame") then
+			continue -- Skip buttons in scrolling frames to preserve visibility
+		end
+		if obj:IsA("TextLabel") and obj.Parent:IsA("Frame") and obj.Parent.Parent:IsA("ScrollingFrame") and obj.Position.X.Offset > 50 then
+			continue -- Skip status boxes to preserve visibility
+		end
+		if orig.bg_trans then
+			local target_bg = (transparency == 1) and 1 or orig.bg_trans
+			ts:Create(obj, tweenInfo, {BackgroundTransparency = target_bg}):Play()
+		end
+		if orig.text_trans then
+			local target_text = (transparency == 1) and 1 or orig.text_trans
+			ts:Create(obj, tweenInfo, {TextTransparency = target_text}):Play()
+		end
+	end
+end
+
+minimize.MouseButton1Click:Connect(function()
+	isMinimized = not isMinimized
+
+	if isMinimized then
+		minimize.Text = "+"
+		fadeElements(1)
+		ts:Create(main, tweenInfo, { Size = minimizedSize }):Play()
+	else
+		minimize.Text = "-"
+		fadeElements(0)
+		ts:Create(main, tweenInfo, { Size = originalSize }):Play()
+	end
+end)
